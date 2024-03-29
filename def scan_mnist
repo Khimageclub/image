@@ -1,0 +1,27 @@
+import numpy as np
+from skimage.transform import resize
+import tensorflow as tf
+
+def scan_mnist(target_size=(32, 32)):
+    # MNIST 데이터셋 로드
+    mnist = tf.keras.datasets.mnist
+    (x_train, _), (_, _) = mnist.load_data()
+
+    # 픽셀 값을 [0, 1] 범위로 정규화
+    x_train = x_train / 255.0
+
+    # 이미지를 32x32 배열로 조정
+    resized_images = []
+    for img in x_train:
+        resized_img = resize(img, target_size, anti_aliasing=True)
+        resized_images.append(resized_img)
+
+    resized_images = np.array(resized_images)
+
+    return resized_images
+
+# MNIST 데이터를 32x32 배열로 가져오기
+resized_mnist = scan_mnist()
+
+# 데이터 형태 확인
+print("Resized MNIST data shape:", resized_mnist.shape) # (60000, 32, 32) - 60000개의 32x32 크기의 이미지
