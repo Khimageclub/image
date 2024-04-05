@@ -1,0 +1,58 @@
+import numpy as np
+
+# ReLU 활성화 함수
+def relu(x):
+    return np.maximum(0, x)
+
+# 합성곱 연산
+def convolve(image, kernel):
+    kernel_height, kernel_width = kernel.shape
+    image_height, image_width = image.shape
+    output_height = image_height - kernel_height + 1
+    output_width = image_width - kernel_width + 1
+    output = np.zeros((output_height, output_width))
+    for i in range(output_height):
+        for j in range(output_width):
+            output[i, j] = np.sum(image[i:i+kernel_height, j:j+kernel_width] * kernel)
+    return output
+
+# 풀링 연산
+def pooling(image, size=2, stride=2):
+    image_height, image_width = image.shape
+    output_height = (image_height - size) // stride + 1
+    output_width = (image_width - size) // stride + 1
+    output = np.zeros((output_height, output_width))
+    for i in range(0, image_height - size + 1, stride):
+        for j in range(0, image_width - size + 1, stride):
+            output[i//stride, j//stride] = np.max(image[i:i+size, j:j+size])
+    return output
+
+# CNN 모델 정의
+class SimpleCNN:
+    def __init__(self):
+        self.conv_kernel = np.random.randn(3, 3)  # 3x3 커널
+        self.fc_weights = np.random.randn(13 * 13, 10)  # Fully connected layer의 가중치
+        # 위 코드에서 Fully connected layer의 입력 크기는 풀링 레이어의 출력 크기에 맞게 조정합니다.
+        # 입력 이미지의 크기가 28x28이고, 2x2 풀링을 사용했으므로, 출력 크기는 13x13입니다.
+
+    def forward(self, x):
+        # 합성곱 레이어
+        conv_output = convolve(x, self.conv_kernel)
+        conv_output_relu = relu(conv_output)
+
+        # 풀링 레이어
+        pooled_output = pooling(conv_output_relu)
+
+        # 완전 연결 레이어
+        flattened_output = pooled_output.flatten()
+        fc_output = np.dot(flattened_output, self.fc_weights)
+
+        return fc_output
+
+# 데이터 준비 및 전처리 (간단한 예시로 랜덤 데이터 생성)
+x = np.random.randn(28, 28)  # Input image
+model = SimpleCNN()
+
+# 모델 실행
+output = model.forward(x)
+print("Output shape:", output.shape)
